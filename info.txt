@@ -1,0 +1,41 @@
+
+https://app.joltup.com/rest/v1/ScheduleShift?scopes=%7B%22active%22:%5B%5D,%22checkForInvalidSwapTrades%22:%5B%5D,%22publishedScope%22:%5B%5D,%22previouslyOwnedScope%22:%7B%7D,%22location%22:%5B%2200001d1525a4fb561015740789fad14c%22%5D,%22inRange%22:%5B%222025-06-30T06:00:00%2B00:00%22,%222025-07-07T05:59:59%2B00:00%22,true%5D%7D&sort=%5B%7B%22property%22:%22startTime%22,%22direction%22:%22ASC%22%7D,%7B%22property%22:%22personId%22,%22direction%22:%22ASC%22%7D%5D&with=%7B%22swapRequest%22:%7B%22scopes%22:%7B%22active%22:%5B%5D,%22userPermissionScope%22:%5B%5D%7D,%22with%22:%7B%22approver%22:%7B%22alias%22:%22swapApprover%22%7D%7D%7D,%22pickupRequests%22:%7B%22scopes%22:%7B%22active%22:%5B%5D%7D,%22with%22:%7B%22newPerson%22:%7B%22scopes%22:%7B%22eagerThumbnailScope%22:%5B%22newPhoto%22,%22newThumb%22%5D%7D%7D,%22oldPerson%22:%7B%22scopes%22:%7B%22eagerThumbnailScope%22:%5B%22oldPhoto%22,%22oldThumb%22%5D%7D%7D,%22approver%22:%7B%7D%7D%7D,%22person%22:%7B%22scopes%22:%7B%22eagerThumbnailScope%22:%5B%5D%7D%7D,%22role%22:%7B%7D,%22hasStations%22:%7B%22scopes%22:%7B%22active%22:%5B%5D%7D%7D,%22stations%22:%7B%7D%7D
+
+
+const req_1_date_encoded = `["2025-06-30T06:00:00+00:00","2025-07-07T05:59:59+00:00",true]`
+const req_2_date_encoded = `["2025-07-03T15:23:36+00:00",null,false]`
+const req_3_date_encoded = `["2025-07-03T15:23:41+00:00",null,false]`
+
+
+
+const myScopes = {
+  active: [],
+  checkForInvalidSwapTrades: [],
+  publishedScope: [],
+  previouslyOwnedScope: {},
+  location: ["00001d1525a4fb561015740789fad14c"],
+  inRange: ["2025-07-03T16:10:35+00:00", null, false],
+  tradePendingScope: [],
+};
+const mySort = [
+  { property: "startTime", direction: "ASC" },
+  { property: "personId", direction: "ASC" },
+];
+const myWith = {
+  swapRequest: {
+    scopes: { active: [], userPermissionScope: [] },
+    with: { approver: { alias: "swapApprover" } },
+  },
+  pickupRequests: {
+    scopes: { active: [] },
+    with: {
+      newPerson: { scopes: { eagerThumbnailScope: ["newPhoto", "newThumb"] } },
+      oldPerson: { scopes: { eagerThumbnailScope: ["oldPhoto", "oldThumb"] } },
+      approver: {},
+    },
+  },
+  person: { scopes: { eagerThumbnailScope: [] } },
+  role: {},
+  hasStations: { scopes: { active: [] } },
+  stations: {},
+};
