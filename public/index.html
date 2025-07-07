@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
     <title>Jolt+</title>
   </head>
   <body>
@@ -10,6 +11,38 @@
     <input type="date" name="end" id="end" />
     <button type="button" id="selectCurrentWeek">Select Current Week</button>
     <button type="button" id="submit">Submit</button>
+
+    <!-- -------------------------- -->
+    <div id="shiftDisplay">
+      <span class="dateHeader">Fri Jul 11 2025</span>
+      <div class="shiftsForDateContainer">
+        <div class="locationShiftsContainer">
+          <span class="locationLabel">Grants</span>
+          <div class="locationShiftsWithTimeWrapper">
+            <div class="locationShifts">
+              <div class="headCashierShift"></div>
+            </div>
+            <div class="timeLine"></div>
+          </div>
+        </div>
+        <div class="locationShiftsContainer">
+          <span class="locationLabel">Gift</span>
+          <div class="locationShiftsWithTimeWrapper">
+            <div class="locationShifts"></div>
+            <div class="timeLine"></div>
+          </div>
+        </div>
+        <div class="locationShiftsContainer">
+          <span class="locationLabel">Golf / Maze</span>
+          <div class="locationShiftsWithTimeWrapper">
+            <div class="locationShifts"></div>
+            <div class="timeLine"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script src="script.js"></script>
+    <script src="displayShifts.js"></script>
   </body>
 </html>
