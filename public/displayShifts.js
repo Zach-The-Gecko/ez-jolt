@@ -1,4 +1,6 @@
-const displayCashierShifts = (shifts) => {
+google.charts.load("current", { packages: ["timeline"] });
+
+const formatShifts = (shifts) => {
   const formattedShifts = shifts.reduce((acc, shift) => {
     const shiftDate = new Date(shift.startTime * 1000);
     if (!acc[shiftDate.toDateString()]) {
@@ -37,7 +39,24 @@ const displayCashierShifts = (shifts) => {
     acc[shiftDate.toDateString()][location][shift.role.name].push(shift);
     return acc;
   }, {});
-  console.log(formattedShifts);
+  return formattedShifts;
+};
+
+const drawChart = (shifts) => {
+  var container = document.getElementById("grants");
+  var chart = new google.visualization.Timeline(container);
+  var dataTable = new google.visualization.DataTable();
+  dataTable.addColumn({ type: "string", id: "Position" });
+  dataTable.addColumn({ type: "string", id: "Name" });
+  dataTable.addColumn({ type: "date", id: "Start" });
+  dataTable.addColumn({ type: "date", id: "End" });
+  dataTable.addRows([
+    ["Shift", "Shift 1", new Date(1751896800000), new Date(1751905800000)],
+    ["Shift", "Shift 2", new Date(1751905800000), new Date(1751919600000)],
+    ["Shift", "Shift 3", new Date(1751919600000), new Date(1751919600000)],
+  ]);
+
+  chart.draw(dataTable);
 };
 
 document.addEventListener("click", () => {
@@ -48,7 +67,8 @@ document.addEventListener("click", () => {
       const cashierShifts = shifts.filter((shift) => {
         return shift.role.name.includes("Cashier");
       });
-      displayCashierShifts(cashierShifts);
+      console.log(formatShifts(cashierShifts));
+      drawChart(formatShifts(cashierShifts));
     })
     .catch((error) => {
       console.error("Error fetching shifts:", error);

@@ -3,6 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script
+      type="text/javascript"
+      src="https://www.gstatic.com/charts/loader.js"
+    ></script>
+
     <link rel="stylesheet" href="style.css" />
     <title>Jolt+</title>
   </head>
@@ -16,29 +21,9 @@
     <div id="shiftDisplay">
       <span class="dateHeader">Fri Jul 11 2025</span>
       <div class="shiftsForDateContainer">
-        <div class="locationShiftsContainer">
-          <span class="locationLabel">Grants</span>
-          <div class="locationShiftsWithTimeWrapper">
-            <div class="locationShifts">
-              <div class="headCashierShift"></div>
-            </div>
-            <div class="timeLine"></div>
-          </div>
-        </div>
-        <div class="locationShiftsContainer">
-          <span class="locationLabel">Gift</span>
-          <div class="locationShiftsWithTimeWrapper">
-            <div class="locationShifts"></div>
-            <div class="timeLine"></div>
-          </div>
-        </div>
-        <div class="locationShiftsContainer">
-          <span class="locationLabel">Golf / Maze</span>
-          <div class="locationShiftsWithTimeWrapper">
-            <div class="locationShifts"></div>
-            <div class="timeLine"></div>
-          </div>
-        </div>
+        <div id="grants"></div>
+        <div id="gift"></div>
+        <div id="golfMaze"></div>
       </div>
     </div>
 
