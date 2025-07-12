@@ -46,24 +46,39 @@ const drawChart = (shifts) => {
   Object.entries(shifts).map(([date, shiftsForDate]) => {
     const dateContainer = document.createElement("div");
     dateContainer.className = "shiftsForDateContainer";
-    Object.entries(shiftsForDate).map(([location, shifts]) => {
-      const locationContainer = document.createElement("div");
-      locationContainer.className = "location-container";
-      locationContainer.innerHTML = `<h3>${location}</h3>`;
-      shifts["Head Cashier"].map((shift) => {
-        const shiftElement = document.createElement("div");
-        shiftElement.className = "shift";
-        shiftElement.innerHTML = `Shift: ${shift.id}`;
-        locationContainer.appendChild(shiftElement);
-      });
-      shifts.Cashier.forEach((shift) => {
-        const shiftElement = document.createElement("div");
-        shiftElement.className = "shift";
-        shiftElement.innerHTML = `Shift: ${shift.id}`;
-        locationContainer.appendChild(shiftElement);
-      });
-      dateContainer.appendChild(locationContainer);
-    });
+    const shiftsToDraw = Object.entries(shiftsForDate).map(
+      ([location, shifts]) => {
+        const chartData = [];
+
+        const locationContainer = document.createElement("div");
+        locationContainer.className = "locationContainer";
+        const locationHeader = document.createElement("h3");
+        locationHeader.innerText = location;
+        locationHeader.className = "locationHeader";
+        locationContainer.appendChild(locationHeader);
+
+        dateContainer.appendChild(locationContainer);
+
+        shifts["Head Cashier"].map((shift) => {
+          chartData.push([
+            shift.stations[0].name,
+            `${shift.person.firstName} ${shift.person.lastName}`,
+            new Date(shift.startTime * 1000),
+            new Date(shift.endTime * 1000),
+          ]);
+        });
+        shifts.Cashier.map((shift) => {
+          chartData.push([
+            shift.stations[0].name,
+            `${shift.person.firstName} ${shift.person.lastName}`,
+            new Date(shift.startTime * 1000),
+            new Date(shift.endTime * 1000),
+          ]);
+        });
+
+        return [locationContainer, chartData];
+      }
+    );
 
     const dateHeader = document.createElement("h2");
     dateHeader.innerText = date;
@@ -72,20 +87,17 @@ const drawChart = (shifts) => {
 
     document.getElementById("shiftDisplay").appendChild(dateContainer);
 
-    // var container = document.getElementById("Grants");
-    // var chart = new google.visualization.Timeline(container);
-    // var dataTable = new google.visualization.DataTable();
-    // dataTable.addColumn({ type: "string", id: "Position" });
-    // dataTable.addColumn({ type: "string", id: "Name" });
-    // dataTable.addColumn({ type: "date", id: "Start" });
-    // dataTable.addColumn({ type: "date", id: "End" });
-    // dataTable.addRows([
-    //   ["Shift", "Shift 1", new Date(1751896800000), new Date(1751905800000)],
-    //   ["Shift", "Shift 2", new Date(1751905800000), new Date(1751919600000)],
-    //   ["Shift", "Shift 3", new Date(1751919600000), new Date(1751919600000)],
-    // ]);
+    shiftsToDraw.forEach(([locationContainer, chartData]) => {
+      const chart = new google.visualization.Timeline(locationContainer);
+      const dataTable = new google.visualization.DataTable();
+      dataTable.addColumn({ type: "string", id: "Position" });
+      dataTable.addColumn({ type: "string", id: "Name" });
+      dataTable.addColumn({ type: "date", id: "Start" });
+      dataTable.addColumn({ type: "date", id: "End" });
+      dataTable.addRows(chartData);
 
-    // chart.draw(dataTable);
+      chart.draw(dataTable);
+    });
   });
 };
 
