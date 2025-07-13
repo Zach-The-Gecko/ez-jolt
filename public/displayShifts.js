@@ -1,5 +1,29 @@
 google.charts.load("current", { packages: ["timeline"] });
 
+const formatShifts1 = (shifts) => {
+  shifts.sort((a, b) => a.startTime - b.startTime);
+  const formattedShifts = shifts.reduce(
+    (acc, shift, index, allShifts) => {
+      if (index === 0) {
+        acc[0].push([shift]);
+      } else {
+        previousShiftDate = new Date(allShifts[index - 1].startTime * 1000);
+        currentShiftDate = new Date(shift.startTime * 1000);
+        if (
+          previousShiftDate.toDateString() === currentShiftDate.toDateString()
+        ) {
+          acc[1]++;
+          acc[0].push(shift);
+        }
+      } // Not sure why I'm using date Index, fix this later
+      console.log(acc[1]);
+      return acc;
+    },
+    [[], { dateIndex: 0 }]
+  );
+  console.log(formattedShifts);
+};
+
 const formatShifts = (shifts) => {
   const formattedShifts = shifts.reduce((acc, shift) => {
     const shiftDate = new Date(shift.startTime * 1000);
@@ -109,8 +133,8 @@ document.addEventListener("click", () => {
       const cashierShifts = shifts.filter((shift) => {
         return shift.role.name.includes("Cashier");
       });
-      console.log(formatShifts(cashierShifts));
-      drawChart(formatShifts(cashierShifts));
+      console.log(formatShifts1(cashierShifts));
+      // drawChart(formatShifts(cashierShifts));
     })
     .catch((error) => {
       console.error("Error fetching shifts:", error);
