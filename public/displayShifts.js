@@ -1,26 +1,59 @@
 google.charts.load("current", { packages: ["timeline"] });
 
+const getStationOrderNumber = (station) => {
+  let num;
+  if (station.includes("Gift")) num = 1;
+  else if (station.includes("Grants")) num = 2;
+  else if (station.includes("Golf")) num = 3;
+  else if (
+    station.includes("Maze") ||
+    station === "Monkey Mayhem" ||
+    station === "Rock"
+  )
+    num = 4;
+  else {
+    num = 5;
+  }
+  if (station.includes("Head")) {
+    num -= 0.5;
+  }
+  if (station.includes("Register")) {
+    num -= 0.25;
+  }
+
+  return num;
+};
+
 const formatShifts1 = (shifts) => {
   shifts.sort((a, b) => a.startTime - b.startTime);
-  const formattedShifts = shifts.reduce(
-    (acc, shift, index, allShifts) => {
-      if (index === 0) {
-        acc[0].push([shift]);
-      } else {
-        previousShiftDate = new Date(allShifts[index - 1].startTime * 1000);
-        currentShiftDate = new Date(shift.startTime * 1000);
-        if (
-          previousShiftDate.toDateString() === currentShiftDate.toDateString()
-        ) {
-          acc[1]++;
-          acc[0].push(shift);
+  const formattedShifts = shifts.reduce((acc, shift, index, allShifts) => {
+    const shiftDate = new Date(shift.startTime * 1000).toLocaleDateString();
+    const shiftForChart = [
+      shift.stations[0].name,
+      `${shift.person.firstName} ${shift.person.lastName}`,
+      new Date(shift.startTime * 1000),
+      new Date(shift.endTime * 1000),
+    ];
+
+    if (index === 0) {
+      acc.push([[shiftForChart], shiftDate]);
+    } else if (shiftDate === acc[acc.length - 1][1]) {
+      acc[acc.length - 1][0].push(shiftForChart);
+    } else {
+      acc[acc.length - 1][0].sort((a, b) => {
+        if (getStationOrderNumber(a[0]) !== getStationOrderNumber(b[0])) {
+          return getStationOrderNumber(a[0]) - getStationOrderNumber(b[0]);
         }
-      } // Not sure why I'm using date Index, fix this later
-      console.log(acc[1]);
-      return acc;
-    },
-    [[], { dateIndex: 0 }]
-  );
+        return a[0].localeCompare(b[0]);
+      });
+      acc.push([[shiftForChart], shiftDate]);
+    }
+
+    return acc;
+  }, []);
+
+  shifts.forEach((shift) => console.log(shift.stations[0].name));
+
   console.log(formattedShifts);
 };
 
