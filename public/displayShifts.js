@@ -1,3 +1,12 @@
+const COLORS = {
+  GIFT: "#FF5733",
+  GIFT_HEAD: "#FF6F61",
+  GRANTS: "#33FF57",
+  GRANTS_HEAD: "#61FF6F",
+  GOLF: "#3357FF",
+  GOLF_HEAD: "#616FFF",
+};
+
 google.charts.load("current", { packages: ["timeline"] });
 
 const getStationOrderNumber = (station) => {
@@ -33,6 +42,7 @@ const formatShifts1 = (shifts) => {
       `${shift.person.firstName} ${shift.person.lastName}`,
       new Date(shift.startTime * 1000),
       new Date(shift.endTime * 1000),
+      "color: red;",
     ];
 
     if (index === 0) {
@@ -52,91 +62,14 @@ const formatShifts1 = (shifts) => {
     return acc;
   }, []);
 
-  shifts.forEach((shift) => console.log(shift.stations[0].name));
-
-  console.log(formattedShifts);
-};
-
-const formatShifts = (shifts) => {
-  const formattedShifts = shifts.reduce((acc, shift) => {
-    const shiftDate = new Date(shift.startTime * 1000);
-    if (!acc[shiftDate.toDateString()]) {
-      acc[shiftDate.toDateString()] = {
-        Gift: { "Head Cashier": [], Cashier: [] },
-        Grants: { "Head Cashier": [], Cashier: [] },
-        "Golf / Maze": { "Head Cashier": [], Cashier: [] },
-        Other: { "Head Cashier": [], Cashier: [] },
-      };
-    }
-    const station = shift.stations[0].name;
-    if (shift.stations.length > 1) {
-      console.warn(
-        `Shift on ${shiftDate.toDateString()} has multiple stations: ${shift.stations
-          .map((s) => s.name)
-          .join(", ")}`
-      );
-    }
-    let location = "";
-    if (station.includes("Gift")) {
-      location = "Gift";
-    } else if (station.includes("Grants")) {
-      location = "Grants";
-    } else if (
-      station.includes("Golf") ||
-      station.includes("Maze") ||
-      station === "Rock" ||
-      station === "Monkey Mayhem"
-    ) {
-      location = "Golf / Maze";
-    } else {
-      console.warn(`Unknown station: ${station}`);
-      location = "Other";
-    }
-
-    acc[shiftDate.toDateString()][location][shift.role.name].push(shift);
-    return acc;
-  }, {});
   return formattedShifts;
 };
 
 const drawChart = (shifts) => {
-  Object.entries(shifts).map(([date, shiftsForDate]) => {
+  console.log(shifts);
+  shifts.map(([shiftsForDate, date]) => {
     const dateContainer = document.createElement("div");
     dateContainer.className = "shiftsForDateContainer";
-    const shiftsToDraw = Object.entries(shiftsForDate).map(
-      ([location, shifts]) => {
-        const chartData = [];
-
-        const locationContainer = document.createElement("div");
-        locationContainer.className = "locationContainer";
-        const locationHeader = document.createElement("h3");
-        locationHeader.innerText = location;
-        locationHeader.className = "locationHeader";
-        locationContainer.appendChild(locationHeader);
-
-        dateContainer.appendChild(locationContainer);
-
-        shifts["Head Cashier"].map((shift) => {
-          chartData.push([
-            shift.stations[0].name,
-            `${shift.person.firstName} ${shift.person.lastName}`,
-            new Date(shift.startTime * 1000),
-            new Date(shift.endTime * 1000),
-          ]);
-        });
-        shifts.Cashier.map((shift) => {
-          chartData.push([
-            shift.stations[0].name,
-            `${shift.person.firstName} ${shift.person.lastName}`,
-            new Date(shift.startTime * 1000),
-            new Date(shift.endTime * 1000),
-          ]);
-        });
-
-        return [locationContainer, chartData];
-      }
-    );
-
     const dateHeader = document.createElement("h2");
     dateHeader.innerText = date;
     dateHeader.className = "dateHeader";
@@ -144,21 +77,27 @@ const drawChart = (shifts) => {
 
     document.getElementById("shiftDisplay").appendChild(dateContainer);
 
-    shiftsToDraw.forEach(([locationContainer, chartData]) => {
-      const chart = new google.visualization.Timeline(locationContainer);
-      const dataTable = new google.visualization.DataTable();
-      dataTable.addColumn({ type: "string", id: "Position" });
-      dataTable.addColumn({ type: "string", id: "Name" });
-      dataTable.addColumn({ type: "date", id: "Start" });
-      dataTable.addColumn({ type: "date", id: "End" });
-      dataTable.addRows(chartData);
+    const chart = new google.visualization.Timeline(dateContainer);
+    const dataTable = new google.visualization.DataTable();
+    dataTable.addColumn({ type: "string", id: "Position" });
+    dataTable.addColumn({ type: "string", id: "Name" });
+    dataTable.addColumn({ type: "date", id: "Start" });
+    dataTable.addColumn({ type: "date", id: "End" });
+    dataTable.addColumn({ type: "string", id: "style", role: "style" });
 
-      chart.draw(dataTable);
-    });
+    dataTable.addRows(shiftsForDate);
+
+    // const options = {
+    //   timeline: { colorByRowLabel: true },
+    //   // alternatingRowStyle: false,
+    //   colors: ["#cbb69d", "#603913", "#c69c6e"],
+    // };
+
+    chart.draw(dataTable);
   });
 };
 
-document.addEventListener("click", () => {
+const fetchAndDrawCharts = () => {
   fetch("/get-shifts-for-date-range")
     .then((response) => response.json())
     .then((data) => {
@@ -166,10 +105,11 @@ document.addEventListener("click", () => {
       const cashierShifts = shifts.filter((shift) => {
         return shift.role.name.includes("Cashier");
       });
-      console.log(formatShifts1(cashierShifts));
-      // drawChart(formatShifts(cashierShifts));
+      drawChart(formatShifts1(cashierShifts));
     })
     .catch((error) => {
       console.error("Error fetching shifts:", error);
     });
-});
+};
+
+document.addEventListener("click", fetchAndDrawCharts);
