@@ -1,12 +1,3 @@
-const COLORS = {
-  GIFT: "#FF5733",
-  GIFT_HEAD: "#FF6F61",
-  GRANTS: "#33FF57",
-  GRANTS_HEAD: "#61FF6F",
-  GOLF: "#3357FF",
-  GOLF_HEAD: "#616FFF",
-};
-
 google.charts.load("current", { packages: ["timeline"] });
 
 const getStationOrderNumber = (station) => {
@@ -40,9 +31,9 @@ const formatShifts1 = (shifts) => {
     const shiftForChart = [
       shift.stations[0].name,
       `${shift.person.firstName} ${shift.person.lastName}`,
+      "color: #ff3913; stroke-width: 5; stroke-color: #39ff13",
       new Date(shift.startTime * 1000),
       new Date(shift.endTime * 1000),
-      "color: red;",
     ];
 
     if (index === 0) {
@@ -65,38 +56,6 @@ const formatShifts1 = (shifts) => {
   return formattedShifts;
 };
 
-const drawChart = (shifts) => {
-  console.log(shifts);
-  shifts.map(([shiftsForDate, date]) => {
-    const dateContainer = document.createElement("div");
-    dateContainer.className = "shiftsForDateContainer";
-    const dateHeader = document.createElement("h2");
-    dateHeader.innerText = date;
-    dateHeader.className = "dateHeader";
-    document.getElementById("shiftDisplay").appendChild(dateHeader);
-
-    document.getElementById("shiftDisplay").appendChild(dateContainer);
-
-    const chart = new google.visualization.Timeline(dateContainer);
-    const dataTable = new google.visualization.DataTable();
-    dataTable.addColumn({ type: "string", id: "Position" });
-    dataTable.addColumn({ type: "string", id: "Name" });
-    dataTable.addColumn({ type: "date", id: "Start" });
-    dataTable.addColumn({ type: "date", id: "End" });
-    dataTable.addColumn({ type: "string", id: "style", role: "style" });
-
-    dataTable.addRows(shiftsForDate);
-
-    // const options = {
-    //   timeline: { colorByRowLabel: true },
-    //   // alternatingRowStyle: false,
-    //   colors: ["#cbb69d", "#603913", "#c69c6e"],
-    // };
-
-    chart.draw(dataTable);
-  });
-};
-
 const fetchAndDrawCharts = () => {
   fetch("/get-shifts-for-date-range")
     .then((response) => response.json())
@@ -113,3 +72,36 @@ const fetchAndDrawCharts = () => {
 };
 
 document.addEventListener("click", fetchAndDrawCharts);
+
+function drawChart(shifts) {
+  console.log(shifts);
+  shifts.map(([shiftsForDate, date]) => {
+    const dateContainer = document.createElement("div");
+    dateContainer.className = "shiftsForDateContainer";
+    const dateHeader = document.createElement("h2");
+    dateHeader.innerText = date;
+    dateHeader.className = "dateHeader";
+    document.getElementById("shiftDisplay").appendChild(dateHeader);
+
+    document.getElementById("shiftDisplay").appendChild(dateContainer);
+
+    const chart = new google.visualization.Timeline(dateContainer);
+    const dataTable = new google.visualization.DataTable();
+    dataTable.addColumn({ type: "string", id: "Position" });
+    dataTable.addColumn({ type: "string", id: "Name" });
+    dataTable.addColumn({ type: "string", id: "style", role: "style" });
+    // dataTable.addColumn({ <---- Add this line to include styles, something with function notation instead of arrow notation and writing functiond eclaration after writing the function that calls it??? I have no idea
+    dataTable.addColumn({ type: "date", id: "Start" });
+    dataTable.addColumn({ type: "date", id: "End" });
+
+    dataTable.addRows(shiftsForDate);
+
+    const options = {
+      // timeline: { colorByRowLabel: true },
+      // alternatingRowStyle: false,
+      colors: ["#e38484", "#e2a3a3"],
+    };
+
+    chart.draw(dataTable, options);
+  });
+}

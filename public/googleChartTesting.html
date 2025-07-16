@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="example5.6"></div>
+
+    <script src="https://www.gstatic.com/charts/loader.js"></script>
+
+    <script type="text/javascript">
+      google.charts.load("current", { packages: ["timeline"] });
+      function drawChart() {
+        var container = document.getElementById("example5.6");
+        var chart = new google.visualization.Timeline(container);
+        var dataTable = new google.visualization.DataTable();
+        dataTable.addColumn({ type: "string", id: "Role" });
+        dataTable.addColumn({ type: "string", id: "Name" });
+        dataTable.addColumn({ type: "string", id: "style", role: "style" });
+        dataTable.addColumn({ type: "date", id: "Start" });
+        dataTable.addColumn({ type: "date", id: "End" });
+        dataTable.addRows([
+          [
+            "President",
+            "George Washington",
+            "#cbb69d",
+            new Date(1789, 3, 30),
+            new Date(1797, 2, 4),
+          ],
+          [
+            "President",
+            "John Adams",
+            "color: #ff3913; stroke-width: 5; stroke-color: #39ff13",
+            new Date(1797, 2, 4),
+            new Date(1801, 2, 4),
+          ],
+          [
+            "President",
+            "Thomas Jefferson",
+            "#c69c6e",
+            new Date(1801, 2, 4),
+            new Date(1809, 2, 4),
+          ],
+        ]);
+
+        google.charts.setOnLoadCallback(drawChart);
+
+        chart.draw(dataTable);
+      }
+    </script>
+  </body>
+</html>
