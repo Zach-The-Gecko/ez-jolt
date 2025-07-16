@@ -24,6 +24,24 @@ const getStationOrderNumber = (station) => {
   return num;
 };
 
+const getStationColor = (station) => {
+  const stationNum = Math.ceil(getStationOrderNumber(station));
+  switch (stationNum) {
+    case 1:
+      return "#e37171";
+    case 2:
+      return "#eeff6d";
+    case 3:
+      return "#7ed57c";
+    case 4:
+      return "#573caf";
+    case 5:
+      return "#9032b5";
+    default:
+      return "#4bb6ce"; // Fallback color
+  }
+};
+
 const formatShifts1 = (shifts) => {
   shifts.sort((a, b) => a.startTime - b.startTime);
   const formattedShifts = shifts.reduce((acc, shift, index, allShifts) => {
@@ -31,7 +49,9 @@ const formatShifts1 = (shifts) => {
     const shiftForChart = [
       shift.stations[0].name,
       `${shift.person.firstName} ${shift.person.lastName}`,
-      "color: #ff3913; stroke-width: 5; stroke-color: #39ff13",
+      `color: ${getStationColor(
+        shift.stations[0].name
+      )}; stroke-width: 2; stroke-color: #000000`,
       new Date(shift.startTime * 1000),
       new Date(shift.endTime * 1000),
     ];
