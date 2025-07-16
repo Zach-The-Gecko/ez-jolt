@@ -17,11 +17,11 @@ app.get("/", (_req, res) => {
 });
 
 app.get("/get-shifts-for-date-range", async (req, res) => {
-  //   const { start, end } = JSON.parse(req.query.data);
-  //   const shifts = await getShiftsForDateRange(start, end);
-  //   res.send(JSON.stringify(shifts));
+  const { start, end } = JSON.parse(req.query.data);
+  const shifts = await getShiftsForDateRange(start, end);
+  res.send(JSON.stringify(shifts));
 
-  res.send(readFileSync(join(__dirname, "shifts.json"), "utf-8")); // Just used while developing frontend so we don't have to make a request to the Jolt API every time
+  // res.send(readFileSync(join(__dirname, "shifts.json"), "utf-8")); // Just used while developing frontend so we don't have to make a request to the Jolt API every time
 });
 
 app.listen(port, () => {
