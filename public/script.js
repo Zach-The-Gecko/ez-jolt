@@ -3,6 +3,9 @@ const startDateElement = document.querySelector("#start");
 const endDateElement = document.querySelector("#end");
 const submitButton = document.querySelector("#submit");
 const selectCurrentWeekButton = document.querySelector("#selectCurrentWeek");
+const findPersonInput = document.querySelector("#findPerson");
+
+let pageCurrentShifts = [];
 
 /**
  * Handles the submit button click to fetch and display shifts
@@ -16,7 +19,7 @@ const submitButtonClickHandler = async () => {
 
     const encodedData = encodeURI(requestData);
     const response = await fetch(
-      `http://localhost:3000/get-shifts-for-date-range?data=${encodedData}`
+      `http://192.168.1.16:3000/get-shifts-for-date-range?data=${encodedData}`
     );
 
     if (!response.ok) {
@@ -30,6 +33,8 @@ const submitButtonClickHandler = async () => {
     const cashiershifts = shifts.filter((shift) => {
       return shift.role.name.includes("Cashier");
     });
+
+    pageCurrentShifts = cashiershifts;
 
     drawChart(formatShifts(cashiershifts));
   } catch (error) {
@@ -53,10 +58,10 @@ const selectCurrentWeekClickHandler = () => {
 
 // Event listeners
 submitButton.addEventListener("click", submitButtonClickHandler);
-selectCurrentWeekButton.addEventListener(
-  "click",
-  selectCurrentWeekClickHandler
-);
+selectCurrentWeekButton.addEventListener("click", (e) => {
+  e.preventDefault();
+  selectCurrentWeekClickHandler();
+});
 
 // Initialize Google Charts
 google.charts.load("current", { packages: ["timeline"] });
@@ -123,13 +128,29 @@ const formatShifts = (shifts) => {
   shifts.sort((a, b) => a.startTime - b.startTime);
 
   const formattedShifts = shifts.reduce((acc, shift, index, allShifts) => {
+    const displayName = `${shift.person.firstName} ${shift.person.lastName}`;
+    let style = `stroke-color: ${getStationColor(
+      shift.stations[0].name
+    )}; stroke-width: 5; color: #ffffff`;
+
+    if (
+      displayName.toLowerCase().includes(findPersonInput.value.toLowerCase()) &&
+      findPersonInput.value
+    ) {
+      style = `stroke-color: ${getStationColor(
+        shift.stations[0].name
+      )}; stroke-width: 5; color: #353535`;
+    }
+    if (shift.pickupRequests) {
+      console.log(shift.pickupRequests);
+      style = `stroke-color: #ff00ff; stroke-width: 5; color: #ff0000`;
+    }
+
     const shiftDate = new Date(shift.startTime * 1000).toLocaleDateString();
     const shiftForChart = [
       shift.stations[0].name,
-      `${shift.person.firstName} ${shift.person.lastName}`,
-      `color: ${getStationColor(
-        shift.stations[0].name
-      )}; stroke-width: 2; stroke-color: #000000`,
+      displayName,
+      style,
       new Date(shift.startTime * 1000),
       new Date(shift.endTime * 1000),
     ];
@@ -165,22 +186,35 @@ const formatShifts = (shifts) => {
   return formattedShifts;
 };
 
+findPersonInput.addEventListener("input", () => {
+  drawChart(formatShifts(pageCurrentShifts));
+});
+
 /**
  * Draws the timeline chart for the shifts
  * @param {Array} shifts - Formatted shifts data grouped by date
  */
 function drawChart(shifts) {
-  console.log(shifts);
-
   // Clear existing charts
   document.getElementById("shiftDisplay").innerHTML = "";
 
   shifts.forEach(([shiftsForDate, date]) => {
+    const personName = findPersonInput.value;
+    const personContainedOnDate = shiftsForDate.filter((shift) => {
+      return shift[1].toLowerCase().includes(personName.toLowerCase());
+    }).length;
+
+    console.log(personContainedOnDate, personName, date);
+
+    if (!personContainedOnDate) {
+      return;
+    }
+
     const dateContainer = document.createElement("div");
     dateContainer.className = "shiftsForDateContainer";
 
     const dateHeader = document.createElement("h2");
-    dateHeader.innerText = date;
+    dateHeader.innerText = new Date(date).toDateString();
     dateHeader.className = "dateHeader";
 
     document.getElementById("shiftDisplay").appendChild(dateHeader);
