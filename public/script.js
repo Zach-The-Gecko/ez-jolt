@@ -19,7 +19,7 @@ const submitButtonClickHandler = async () => {
 
     const encodedData = encodeURI(requestData);
     const response = await fetch(
-      `http://192.168.1.16:3000/get-shifts-for-date-range?data=${encodedData}`
+      `http://192.168.1.24:3000/get-shifts-for-date-range?data=${encodedData}`
     );
 
     if (!response.ok) {
@@ -79,7 +79,7 @@ const getStationOrderNumber = (station) => {
   else if (
     station.includes("Maze") ||
     station === "Monkey Mayhem" ||
-    station === "Rock"
+    station.includes("Rock")
   )
     num = 4;
   else {
@@ -128,56 +128,109 @@ const formatShifts = (shifts) => {
   shifts.sort((a, b) => a.startTime - b.startTime);
 
   const formattedShifts = shifts.reduce((acc, shift, index, allShifts) => {
-    const displayName = `${shift.person.firstName} ${shift.person.lastName}`;
-    let style = `stroke-color: ${getStationColor(
-      shift.stations[0].name
-    )}; stroke-width: 5; color: #ffffff`;
+    for (let i = 0; i < shift.stations.length; i++) {
+      const displayName =
+        window.innerWidth > 600
+          ? `${shift.person.firstName} ${shift.person.lastName}`
+          : shift.person.firstName;
+      let style = `stroke-color: ${getStationColor(
+        shift.stations[i].name
+      )}; stroke-width: 5; color: #ffffff`;
 
-    if (
-      displayName.toLowerCase().includes(findPersonInput.value.toLowerCase()) &&
-      findPersonInput.value
-    ) {
-      style = `stroke-color: ${getStationColor(
-        shift.stations[0].name
-      )}; stroke-width: 5; color: #353535`;
-    }
-    if (shift.pickupRequests) {
-      console.log(shift.pickupRequests);
-      style = `stroke-color: #ff00ff; stroke-width: 5; color: #ff0000`;
-    }
+      if (
+        displayName
+          .toLowerCase()
+          .includes(findPersonInput.value.toLowerCase()) &&
+        findPersonInput.value
+      ) {
+        style = `stroke-color: ${getStationColor(
+          shift.stations[i].name
+        )}; stroke-width: 5; color: #353535`;
+      }
+      // if (shift.requestedReason) {
+      if (shift.released > 0 || shift.swapTradeId) {
+        console.log(shift);
+        style = `stroke-color: ${getStationColor(
+          shift.stations[i].name
+        )}; stroke-width: 5; color: #cccccc`;
+      }
+      const tooltipHTML = `<div class="tooltip">
+      <table>
+        <tr>
+          ${
+            shift.swapTradeId // I don't think this actually means there is a pending swap request... Also I found out that pickup requests can be outdated, ex. the person currently working the shfit will have a approved pickup request for their shift...
+              ? `
+          <div class="pendingSwapReq">Pending Swap Request</div> <br />`
+              : ""
+          }<th> ${shift.person.firstName} ${shift.person.lastName}</th>
+        </tr>
+        
+        <tr>
+          <td><strong>Position: </strong>${shift.stations[i].name}</td>
+        </tr>
+        <tr>
+          <td><strong>Time: </strong>${new Date(
+            shift.startTime * 1000
+          ).toLocaleTimeString([], {
+            hour: "numeric",
+            minute: "2-digit",
+          })} - ${new Date(shift.endTime * 1000).toLocaleTimeString([], {
+        hour: "numeric",
+        minute: "2-digit",
+      })}</td>
+        </tr>
 
-    const shiftDate = new Date(shift.startTime * 1000).toLocaleDateString();
-    const shiftForChart = [
-      shift.stations[0].name,
-      displayName,
-      style,
-      new Date(shift.startTime * 1000),
-      new Date(shift.endTime * 1000),
-    ];
-
-    // Sort the last group when we reach the end
-    if (index === allShifts.length - 1) {
-      acc[acc.length - 1][0].sort((a, b) => {
-        if (getStationOrderNumber(a[0]) !== getStationOrderNumber(b[0])) {
-          return getStationOrderNumber(a[0]) - getStationOrderNumber(b[0]);
+        ${
+          shift.released > 0
+            ? `<tr>
+          <td><strong>Pickup Requests: </strong>${
+            shift.pickupRequests ? shift.pickupRequests.length : 0
+          }</td>
+        </tr>`
+            : ""
         }
-        return a[0].localeCompare(b[0]);
-      });
-    }
+      </table>
+    </div>`;
 
-    if (index === 0) {
-      acc.push([[shiftForChart], shiftDate]);
-    } else if (shiftDate === acc[acc.length - 1][1]) {
-      acc[acc.length - 1][0].push(shiftForChart);
-    } else {
-      // Sort the previous group before starting a new one
-      acc[acc.length - 1][0].sort((a, b) => {
-        if (getStationOrderNumber(a[0]) !== getStationOrderNumber(b[0])) {
-          return getStationOrderNumber(a[0]) - getStationOrderNumber(b[0]);
+      const shiftDate = new Date(shift.startTime * 1000).toLocaleDateString();
+      const shiftForChart = [
+        shift.stations[i].name,
+        displayName,
+        style,
+        tooltipHTML,
+        new Date(shift.startTime * 1000),
+        new Date(shift.endTime * 1000),
+      ];
+
+      // Sort the last group when we reach the end
+      if (index === allShifts.length - 1) {
+        acc[acc.length - 1][0].sort((a, b) => {
+          if (getStationOrderNumber(a[0]) !== getStationOrderNumber(b[0])) {
+            return getStationOrderNumber(a[0]) - getStationOrderNumber(b[0]);
+          }
+          return a[0].localeCompare(b[0]);
+        });
+      }
+      // if (i === shift.stations.length - 1) {
+      if (index === 0) {
+        if (i === 0) {
+          acc.push([[shiftForChart], shiftDate]);
+        } else {
+          acc[acc.length - 1][0].push(shiftForChart);
         }
-        return a[0].localeCompare(b[0]);
-      });
-      acc.push([[shiftForChart], shiftDate]);
+      } else if (shiftDate === acc[acc.length - 1][1]) {
+        acc[acc.length - 1][0].push(shiftForChart);
+      } else {
+        // Sort the previous group before starting a new one
+        acc[acc.length - 1][0].sort((a, b) => {
+          if (getStationOrderNumber(a[0]) !== getStationOrderNumber(b[0])) {
+            return getStationOrderNumber(a[0]) - getStationOrderNumber(b[0]);
+          }
+          return a[0].localeCompare(b[0]);
+        });
+        acc.push([[shiftForChart], shiftDate]);
+        // }
+      }
     }
 
     return acc;
@@ -226,11 +279,17 @@ function drawChart(shifts) {
     dataTable.addColumn({ type: "string", id: "Position" });
     dataTable.addColumn({ type: "string", id: "Name" });
     dataTable.addColumn({ type: "string", id: "style", role: "style" });
+    dataTable.addColumn({ type: "string", role: "tooltip" });
     dataTable.addColumn({ type: "date", id: "Start" });
     dataTable.addColumn({ type: "date", id: "End" });
 
     dataTable.addRows(shiftsForDate);
 
-    chart.draw(dataTable);
+    const options = {
+      // Use an HTML tooltip.
+      tooltip: { isHtml: true },
+    };
+
+    chart.draw(dataTable, options);
   });
 }
