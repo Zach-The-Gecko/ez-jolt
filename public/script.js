@@ -19,7 +19,7 @@ const submitButtonClickHandler = async () => {
 
     const encodedData = encodeURI(requestData);
     const response = await fetch(
-      `http://192.168.1.24:3000/get-shifts-for-date-range?data=${encodedData}`
+      `https://joltplus.onrender.com/get-shifts-for-date-range?data=${encodedData}`
     );
 
     if (!response.ok) {

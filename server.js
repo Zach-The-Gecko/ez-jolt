@@ -2,10 +2,10 @@ import express from "express";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import getShiftsForDateRange from "./getShiftsForDateRange.js";
-import { readFileSync } from "fs";
+// import { readFileSync } from "fs";
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
