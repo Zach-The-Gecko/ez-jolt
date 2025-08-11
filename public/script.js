@@ -132,7 +132,7 @@ const formatShifts = (shifts) => {
       const displayName =
         window.innerWidth > 600
           ? `${shift.person.firstName} ${shift.person.lastName}`
-          : shift.person.firstName;
+          : shift.person.firstName + " " + shift.person.lastName[0] + ".";
       let style = `stroke-color: ${getStationColor(
         shift.stations[i].name
       )}; stroke-width: 5; color: #ffffff`;
@@ -285,9 +285,12 @@ function drawChart(shifts) {
 
     dataTable.addRows(shiftsForDate);
 
+    const showLabel = window.innerWidth > 600;
+
     const options = {
       // Use an HTML tooltip.
       tooltip: { isHtml: true },
+      timeline: { showRowLabels: showLabel },
     };
 
     chart.draw(dataTable, options);
