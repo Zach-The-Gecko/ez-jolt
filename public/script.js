@@ -19,7 +19,8 @@ const submitButtonClickHandler = async () => {
 
     const encodedData = encodeURI(requestData);
     const response = await fetch(
-      `https://joltplus.onrender.com/get-shifts-for-date-range?data=${encodedData}`
+      // `https://joltplus.onrender.com/get-shifts-for-date-range?data=${encodedData}`
+      `http://localhost:3000/get-shifts-for-date-range?data=${encodedData}`,
     );
 
     if (!response.ok) {
@@ -73,7 +74,9 @@ google.charts.load("current", { packages: ["timeline"] });
  */
 const getStationOrderNumber = (station) => {
   let num;
-  if (station.includes("Gift")) num = 1;
+  if (station.includes("Head Cashier")) {
+    num = 0.5;
+  } else if (station.includes("Gift")) num = 1;
   else if (station.includes("Grants")) num = 2;
   else if (station.includes("Golf")) num = 3;
   else if (
@@ -88,6 +91,9 @@ const getStationOrderNumber = (station) => {
 
   if (station.includes("Head")) {
     num -= 0.5;
+    if (station.includes("Gate")) {
+      num += 0.1;
+    }
   }
   if (station.includes("Register")) {
     num -= 0.25;
@@ -129,13 +135,15 @@ const formatShifts = (shifts) => {
 
   const formattedShifts = shifts.reduce((acc, shift, index, allShifts) => {
     for (let i = 0; i < shift.stations.length; i++) {
+      if (shift.person == undefined) continue; // For shifts that don't have anybody working them but people can pick up
       const displayName =
         window.innerWidth > 600
           ? `${shift.person.firstName} ${shift.person.lastName}`
           : shift.person.firstName + " " + shift.person.lastName[0] + ".";
       let style = `stroke-color: ${getStationColor(
-        shift.stations[i].name
+        shift.stations[i].name,
       )}; stroke-width: 5; color: #ffffff`;
+      let swappingName = "";
 
       if (
         displayName
@@ -144,23 +152,41 @@ const formatShifts = (shifts) => {
         findPersonInput.value
       ) {
         style = `stroke-color: ${getStationColor(
-          shift.stations[i].name
+          shift.stations[i].name,
         )}; stroke-width: 5; color: #353535`;
       }
       // if (shift.requestedReason) {
       if (shift.released > 0 || shift.swapTradeId) {
-        console.log(shift);
+        // console.log(shift);
         style = `stroke-color: ${getStationColor(
-          shift.stations[i].name
+          shift.stations[i].name,
         )}; stroke-width: 5; color: #cccccc`;
+        if ((tradeID = shift.swapTradeId)) {
+          shiftsToSwapWith = shifts.filter((tradableShift) => {
+            return (
+              tradableShift.swapTradeId == shift.swapTradeId &&
+              tradableShift.personId != shift.personId
+            );
+          });
+          if (shiftsToSwapWith.length == 1) {
+            if ((swappingShiftPerson = shiftsToSwapWith[0].person)) {
+              swappingName =
+                swappingShiftPerson.firstName +
+                " " +
+                swappingShiftPerson.lastName[0] +
+                ".";
+            }
+          }
+        }
       }
+
       const tooltipHTML = `<div class="tooltip">
       <table>
         <tr>
           ${
             shift.swapTradeId // I don't think this actually means there is a pending swap request... Also I found out that pickup requests can be outdated, ex. the person currently working the shfit will have a approved pickup request for their shift...
               ? `
-          <div class="pendingSwapReq">Pending Swap Request</div> <br />`
+          <div class="pendingSwapReq">Pending Swap With ${swappingName}</div> <br />`
               : ""
           }<th> ${shift.person.firstName} ${shift.person.lastName}</th>
         </tr>
@@ -170,14 +196,14 @@ const formatShifts = (shifts) => {
         </tr>
         <tr>
           <td><strong>Time: </strong>${new Date(
-            shift.startTime * 1000
+            shift.startTime * 1000,
           ).toLocaleTimeString([], {
             hour: "numeric",
             minute: "2-digit",
           })} - ${new Date(shift.endTime * 1000).toLocaleTimeString([], {
-        hour: "numeric",
-        minute: "2-digit",
-      })}</td>
+            hour: "numeric",
+            minute: "2-digit",
+          })}</td>
         </tr>
 
         ${
